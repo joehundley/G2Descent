@@ -1,0 +1,39 @@
+# This is LiE code. 
+# set default group 
+setdefault E7
+# define P and Q 
+p=[1,3,4,5,6,7]
+q=[1,2,3,5,7]
+# get a matrix which stores Kostant representatives for the double cosets in 
+# Q\GE7/P
+
+# inverse of a Weyl element (from the LiE manual) 
+inverse(vec w) = loc l = size(w); loc wi=w;for i = 1 to l do wi[i]=w[l+1-i] od; wi
+
+
+# we define a function to compute and store double coset representatives. 
+# this is based on "double_cosets" from section 5.4.3 (p. 83) of the LiE manual.
+# but instead of just printing the Kostant representatives, it stores them in a matrix.
+double_cosets_matrix( vec l,r; grp g)=loc m=null(0,Lie_rank(g));
+if size(r) >= size(l) then 
+	for x row W_orbit(char_v(r, g), g) do loc w = W_word(x, g);
+		if w== l_reduce(l,w, g) then m=m^[W_action(all_one(Lie_rank(g)), inverse(w), g)] 	fi od else 
+for x row W_orbit( char_v(l,g),g) do loc w = W_word(x,g); if w== l_reduce( r,w,g) then m = m+W_action( all_one(Lie_rank(g)), w, g) fi od fi; m
+
+
+dcm = double_cosets_matrix(q,p)
+# define a matrix which encodes the roots gamma such that e0 is the sum of 
+# the root vectors X_gamma
+e0_roots = [[1,1,2,2,1,0,0],[1,1,1,2,1,1,0],[1,1,1,1,1,1,1],
+[0,1,1,2,2,1,0],[0,1,1,2,1,1,1]]
+#  union and intersection of sets of vectors, (taken from section 5.1.2 of the LiE manual)
+union( mat a,b)=unique(a^b)
+intersection(mat a,b)=support(X unique(a)+X unique(b)-X union(a,b))
+# given a set of roots (encoded as a matrix) and a weyl element (encoded as a tuple) compute
+# the subset consisting of all elements which are mapped to positive roots by the weyl element.
+goesUp( vec weylElt ; mat rootSet; grp g ) = intersection( rootSet, W_rt_action( pos_roots, weylElt,g) )
+# psi_{U}^{e_0} is trivial on U intersect w^{-1} Q w if and only if goesUp(w, e0_roots) is null(0,7) (the empty set).
+for x row dcm do
+\ loc w = W_word(x);
+\ if goesUp(w, e0_roots) == null(0,7) then print(w) fi od 
+# one sees that there are eight elements. 

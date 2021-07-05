@@ -1,0 +1,102 @@
+# This is LiE code. 
+# consider a special case of the exchange lemma, lemma 7.1.1, where
+# * C is a T-stable unipotent subgroup with set of roots S
+# * X and Y are root subgroups attached to roots x and y respectively
+# * the character psi_C is nontrivial on the root subgroup attached to a root alpha
+#   if and only if that root is contained in a set psi.
+# then the conditions of the exchange lemma become combinatorial. 
+# "X normalizes C" becomes "x+a is in S for all a in S such that x+a is a root."
+# "X \cap C is normal in X" becomes trivial. 
+# "X preserves psi_C" becomes "x+a is not in psi for any root a in S"
+# "psi_C is trivial on X \cap C" becomes "x is not in psi."
+# "[X,Y] \subset C" becomes "x+y is in S if it is a root."
+# "there is a nondegenerate pairing ..." becomes "x+y is in psi."
+# (observe that one may deduce that x,y are not in S). 
+# these combinatorial conditions can be easily checked using LiE and this is 
+# essentially what the function "swap" below does. 
+
+# the function is used interactively in the LiE interpreter. One defines two matrices, 
+# u and psi, which should represent sets of roots. Then, upon calling "swap(x,y)", 
+# the function verifies that x is in u. If not, it prints an error message. 
+# If x is in u, then we define S to be the complement of {x} in u, and check that 
+# x, y, s and psi satisfy the necessary conditions. 
+# If they don't, an error message is printed. 
+# If they do, then u is set equal to (u -{x}) union {y}. 
+# Because swap(x,y) updates the definition of u, the function can be called repeatedly 
+# to prove statements like lemmas 7.1.8, 7.1.9, and 7.4.3.
+
+
+# some basic set operations (see LiE manual p. 75) 
+union( mat a,b)=unique(a^b)
+intersection(mat a,b)=support(X unique(a)+X unique(b)-X union(a,b))
+complement(mat a,b) = support( X a - X intersection(a,b))
+
+
+
+# checks whether one matrix (viewed as a set of vectors) is contained in another
+contains( mat a,b) = n_rows(complement(a,b))==0
+
+# take the complement of a given set of roots in the positive roots. 
+# (convenient when the root set you want to define contains almost all positive roots.)
+c(mat m; grp g) = complement(pos_roots(g), m)
+
+
+# check closure of a set of roots
+closed( mat u ) = loc p = (X u)*(X u);
+   loc s = support(p);
+   loc s1 = intersection(s, roots);
+   return contains(s1, u)
+   
+   
+
+# assumes u and psi are defined. 
+# checks the swap conditions and modifies u as indicated if they are met
+# indicates the error if they are not
+swap( vec x, y)= 
+   if contains(x, u) then 
+      if contains(x, psi) then 
+         print("The root "+x+" is in the support of the character.");
+         print(psi);
+         print("This should probably be thought about carefully and done manually.")
+      else
+         if contains(y, u) then 
+            print("The root "+y+" can't be swapped in because it's already in.")
+         else
+            if contains(x+y, psi) then 
+               loc c = complement(u,[x]);
+               loc p = (X x)*(X c); 
+               loc s = support(p); 
+               if contains(0*x, s) then 
+                  print("Error! Our 'group' has both "+x+" and -"+x+"!"); print(u)
+               else
+                  loc z = intersection(s, roots);
+                  if contains(z, complement(c,psi)) then                      
+                     loc q = (X y)*(X c); 
+                     loc t = support(q);
+                     if contains(0*x, t) then 
+                        print("Can't swap in "+y+" because we have -"+y+"."); print(u)
+                     else 
+                        loc z1=intersection(t, roots); 
+                        if contains(z1, complement(c, psi)) then 
+                           u=complement(u, [x])^[y]
+                        else 
+                           print("No good.");
+                           for a row c do for b row psi do if y+a==b then print(" "+y+"+"+a+"="+b+" in support of char") fi od od;
+                           for a row c do for b row complement(roots, u) do if y+a==b then print(" "+y+"+"+a+"="+b+" a root not integrated over.") fi od od 
+                        fi
+                     fi
+                  else 
+                     print("No good.");
+                     for a row c do for b row psi do if x+a==b then print(" "+x+"+"+a+"="+b+" in support of char") fi od od;
+                     for a row c do for b row complement(roots, u) do if x+a==b then print(" "+x+"+"+a+"="+b+" a root not integrated over.") fi od od 
+                  fi 
+               fi 
+            else
+               print(" "+x+"+"+y+"="+(x+y)+", which is not in "); print(psi)
+            fi
+         fi
+      fi
+   else
+      print("The root "+x+ " can't be swapped out because it is not in.")
+   fi
+

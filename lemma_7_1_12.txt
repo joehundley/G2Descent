@@ -1,0 +1,16 @@
+# This is LiE code. 
+# set the default group 
+setdefault E7
+# input the Weyl element
+w3=[2,4,3,1,5,4,2,3,4,6,5,4,2,3,7,6,5]
+print("Weyl element w3: "+w3)
+# input the six roots from e0 prime
+print("roots from e0 prime:")
+e0p_roots=-[[1,0,1,0,0,0,0],[0,0,0,0,0,1,1],[0,1,1,1,0,0,0],[0,1,0,1,1,0,0],
+[0,0,1,1,1,0,0],[0,0,0,1,1,1,0]]
+print(e0p_roots)
+# use the ! to reverse the order (see p. 17 of LiE Manual) because we want a 
+# left action and LiE assumes a right action
+print("image of these roots under w3")
+print(W_rt_action(e0p_roots, !w3))
+quit

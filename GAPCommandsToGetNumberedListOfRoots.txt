@@ -1,0 +1,10 @@
+RequirePackage("sla");;
+RequirePackage("unipot");;
+L:= SimpleLieAlgebra("E",8,Rationals);;
+for i in [1..120] do Print(i, " ", PositiveRootsNF(RootSystem(L))[i],"\n"); od;
+L:= SimpleLieAlgebra("E",6,Rationals);;
+for i in [1..36] do Print(i, " ", PositiveRootsNF(RootSystem(L))[i],"\n"); od;
+L:= SimpleLieAlgebra("E",7,Rationals);;
+for i in [1..63] do Print(i, " ", PositiveRootsNF(RootSystem(L))[i],"\n"); od;
+L:= SimpleLieAlgebra("F",4,Rationals);;
+for i in [1..24] do Print(i, " ", PositiveRootsNF(RootSystem(L))[i],"\n"); od;

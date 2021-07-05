@@ -1,0 +1,10 @@
+
+RequirePackage("sla");;
+RequirePackage("unipot");;
+L:= SimpleLieAlgebra("E",8,Rationals);;
+Print("{");
+for x in Basis(L) do 
+     Print(AdjointMatrix(Basis(L), L.248)); Print(",");
+     od;
+Print("}");
+quit; 

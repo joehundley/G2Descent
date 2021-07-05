@@ -1,0 +1,38 @@
+# This is LiE code. 
+# in this file we define a function which checks the conditions of cor 3.2.5-3.2.7, 
+# allowing for quicker verification of the hypotheses in applying cor 3.2.7 
+# to prove prop 7.4.7, 7.4.12, etc.
+
+# some basic set operations (see LiE manual p. 75) 
+union( mat a,b)=unique(a^b)
+intersection(mat a,b)=support(X unique(a)+X unique(b)-X union(a,b))
+complement(mat a,b) = support( X a - X intersection(a,b))
+
+
+# checks whether one matrix (viewed as a set of vectors) is contained in another
+contains( mat a,b) = n_rows(complement(a,b))==0
+
+# take the complement of a given set of roots in the positive roots. 
+# (convenient when the root set you want to define contains almost all positive roots.)
+c(mat m; grp g) = complement(pos_roots(g), m)
+
+
+# check closure of a set of roots
+closed( mat u ) = loc p = (X u)*(X u);
+   loc s = support(p);
+   loc s1 = intersection(s, roots);
+   return contains(s1, u)
+   
+# checks the condition of cor 3.2.5-3.2.7
+# that U is contained in U_P, that the set of roots which are supposed to 
+# define a character of U are all contained in the set of roots of U, 
+# and that the character thus defined is trivial on (U, U_P)
+check30( mat psi, u, up) = 
+  if !contains(u,up) then print("error. up does not contain u") fi;
+  if !contains(psi, u) then print("error. u does not contain psi") fi;
+  loc p = (X u)*(X up);
+  loc s = support(p);
+  loc s1 = intersection(s, psi);
+  return n_rows(s1)==0 
+   
+

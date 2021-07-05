@@ -1,0 +1,27 @@
+# This is GAP code. 
+# Computations used for producing the rank sequence to Dynkin diagram dictionary.
+L:= SimpleLieAlgebra("E",7,Rationals);;
+RequirePackage("sla");
+o:=NilpotentOrbits(L);;
+rankSeqPairs:=[];
+rankSeqs:=[];
+for i in [1..44] do
+   e:=SL2Triple(o[i])[3];;
+   ade :=AdjointMatrix(Basis(L), e);;
+   rankSequence:=[];;
+   p:=ade^0;;
+   while RankMat(p) > 0 do Add(rankSequence, RankMat(p)); p:=p*ade; od;
+   Add(rankSeqPairs, [rankSequence, WeightedDynkinDiagram(o[i])]);
+   Add(rankSeqs, rankSequence);
+od;
+distinctRankSeqs := Union([ ], rankSeqs);;
+# we can now verify that all the rank sequences are different by verifying that 
+# Length(distinctRankSeqs) and Length(rankSeqs) are the same.
+
+Length(distinctRankSeqs); 
+Length(rankSeqs); 
+
+# the posted "rank sequence to weighted Dynkin diagram dictionary" was produced
+# by running the above commands in gap and then displaying the resulting 
+# "rankSeqPairs", and then reformatting slightly and adding a few labels by 
+# hand. It can be used to verify the second assertion of Lemma 7.1.3.

@@ -1,0 +1,77 @@
+# This is LiE code. 
+# a vector with 0 at the indices in s and 1's at the other indices
+# used for coset computations. See p. 82 of the LiE manual.
+char_v( vec s ; grp g ) = 
+ loc y = rho(g); for i = 1 to size(s) do y[s[i]]=0 od; y
+
+
+# computes the set of Weyl words reduced on the left by l and 
+# on the right by r and stores them in a matrix, using the 
+# fact that the stabilizer of rho is trivial. 
+# The words can be recovered from this matrix using W_word
+# This is based on double_cosets from p. 83 of the LiE manual. 
+# Use of char_v is explained on p. 82. 
+double_cosets_matrix( vec l,r; grp g)=
+loc m=null(0,Lie_rank(g)); # initialize empty matrix to hold the answer
+if size(r) >= size(l) then # reduce by the larger rank Weyl group first for speed
+ for x row W_orbit(char_v(r, g), g) do loc w = W_word(x, g); # see double_cosets documentation, p. 83 of manual
+  if w== l_reduce(l,w, g) then 
+   m=m+W_action(all_one(Lie_rank(g)), inverse(w), g) # but instead of printing w we store it in a matrix
+  fi
+ od 
+else 
+ for x row W_orbit( char_v(l,g),g) do loc w = W_word(x,g); 
+  if w== l_reduce( r,w,g) then 
+   m = m+W_action( all_one(Lie_rank(g)), w, g) 
+  fi 
+ od 
+fi; m
+
+
+
+
+
+#  union and intersection of sets of vectors, (taken from section 5.1.2 of the LiE manual)
+union( mat a,b)=unique(a^b)
+intersection(mat a,b)=support(X unique(a)+X unique(b)-X union(a,b))
+# set of positive roots in a given root set which are mapped to a negative root by a given weyl element
+goesDown( vec weylElt ; mat rootSet ; grp g) = intersection( rootSet, -W_rt_action( pos_roots , weylElt,  g) )
+# set of roots of g  which have entries specified in s at positions specified by t. 
+piece( vec s, t ; grp g) = loc ans = null(0, Lie_rank(g)); for x row pos_roots(g) do loc check = 0; for i=1 to size(t) do if x[t[i]] != s[i] then check+=1 fi od; if check==0 then ans=ans^[x] fi od;ans
+
+
+
+
+
+# set the default group 
+setdefault E7
+
+
+
+setdefault E7 # set the default group 
+q=[1,2,3,5,7]; p=[2,3,4,5] # lists of indices of simple roots in the Levis of our two parabolics
+dcm=double_cosets_matrix(q,p) #Kostant representatives for Q\GE7/P
+print(" Q\GE7/P has "+n_rows(dcm)+" elements ")
+# next we filter out the out the ones that send 0000001 to a positive root.
+dcm1=null(0,7) # initialize empty matrix to store the result 
+for x row dcm do loc w = W_word(x); if goesDown(w, [[0,0,0,0,0,0,1]])==[[0,0,0,0,0,0,1]] then dcm1=dcm1^[x] fi od
+print(n_rows(dcm1) + " elements send 0000001 to a negative root.")
+# now we filter again
+dcm2=null(0,7) # empty matrix to hold the result
+for x row dcm1 do 
+ loc w=W_word(x); # get the weyl element 
+ loc gd = goesDown(w, piece([1,0,0],[1,6,7])); # get the set of roots which it maps to negative roots 
+ loc y = support((X gd)*(X gd)); # get the set of all sums of two roots in gd
+ if contains([2,1,2,2,1,0,0],y) then dcm2=dcm2^[x] fi # if 2122100 is not in that set, this weyl element is discarded
+od 
+
+print("Out of those, "+n_rows(dcm2)+ "  send two roots that add up to 2122100 to negative roots.")
+# last filtering procedure is the same as the previous.
+dcm3=null(0,7) #empty matrix to contain the answer 
+for x row dcm2 do 
+ loc w=W_word(x); 
+ loc gd = goesDown(w, piece([0,1,0],[1,6,7])); 
+ loc y = support((X gd)*(X gd)); 
+ if contains([0,1,1,2,2,2,0],y) then dcm3=dcm3^[x] fi od
+print("Out of those, the number that send two roots that add up to 0112220 down is "+n_rows(dcm3)+":")
+for x row dcm3 do print(W_word(x)) od

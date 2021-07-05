@@ -1,0 +1,81 @@
+# This is LiE code. 
+#set the default group
+setdefault E7
+# define w6
+w6=[4,2,3,5,4,6,5,4,2,3,1,4,3,7,6,5,4,2]
+print("w6 ="+w6)
+# define w0 using "long word" and "lr_reduce" (see LiE manual p. 62, and 63)
+w0 = lr_reduce([1,3,4,5,6,7],long_word, [1,3,4,5,6,7])
+print("w0:")
+print(w0)
+# define the roots that appear in \psi_U^{e_0}
+e0_roots= [[1,1,2,2,1,0,0],[1,1,1,2,1,1,0],[1,1,1,1,1,1,1],[0,1,1,2,2,1,0],[0,1,1,2,1,1,1]]
+print("roots from the character \psi_U^{e_0}:")
+print(e0_roots)
+print("image of roots under w6:")
+print(W_rt_action(e0_roots, !w6)) # use ! to reverse order because we use a left action and 
+# LiE provides a right action.
+# define lambda_1
+lam1=[1,-2,-1,1,1,-1,1,-1]
+# define lambda_2
+lam2=[-1,0,2,-1,-1,2,-1,0]
+# switch default group to E8 to handle weights of GE7 as opposed to E7.
+setdefault E8
+print("lamdba_1:"+lam1)
+print("image of lambda_1 under w_6w_0:")
+# use W_action instead of W_rt_action since our tuples represent elements in terms of the 
+# fundamental weights.
+print(W_action( lam1, !(w6^w0) ))
+print("lamdba_2:"+lam2)
+print("image of lambda_2 under w_6w_0:")
+# use W_action instead of W_rt_action since our tuples represent elements in terms of the 
+# fundamental weights.
+print(W_action( lam2, !(w6^w0) ))
+print("image of [0,1,0,0,0,0,0,0] under w_6w_0")
+print(W_action( id(8)[2], !(w6^w0)))
+
+# a function which treats two matrices as sets of tuples and takes their union
+union( mat a,b)=unique(a^b)
+
+# a function treats two matrices as sets of tuples and takes their intersections  
+intersection(mat a,b)=support(X unique(a)+X unique(b)-X union(a,b))
+
+# a function which treats two matrices as sets of tuples and takes complement of the 
+# second in their first
+complement(mat a,b) = support( X a - X intersection(a,b))
+
+# add up the rows of a matrix
+sum(mat m ) = all_one( n_rows( m ))*m
+
+
+# computes the set of all roots whose ith entry is positive 
+# that is, the roots of the unipotent radical of the standard maximal parabolic whose
+# levi contains every simple root except i 
+unipRad( int i; grp g) = loc ans =null(0, Lie_rank(g)); for x row pos_roots(g) do if x[i] > 0 then ans=ans^[x] fi od; ans
+# computes the set of all positive roots whose ith entry is 0
+# that is the set of positive roots in the standard Levi that contains every simple root
+# except i
+levi(int i ; grp g) = complement( pos_roots(g), unipRad( i, g ))
+# computes the set of roots of the unipotent radical of the standard parabolic 
+# whose levi contains all simple roots except those whose indices are listed in s
+unipRad( vec s; grp g) = loc ans =null(0, Lie_rank(g)); loc v0= rho(g)-char_v(s,g); 
+for x row pos_roots(g) do if x*v0 > 0 then ans=ans^[x] fi od; unique(ans)
+# computes the set of positive roots in the standard Levi subgroup which contains
+# the simple roots listed in s and only those.
+levi( vec s; grp g) = complement( pos_roots(g), unipRad(s,g))
+
+# compute 2 rho_B 
+# multiplying by Cartan puts it in terms of fundamental weights for ease of comparison
+# with print(W_action( id(8)[2], !(w6^w0)))
+two_rho_B = sum(levi(8))*Cartan
+print("2 rho_B=" + two_rho_B)
+
+# compute 2 rho_Q 
+two_rho_Q = sum(intersection(unipRad([4,6]), levi(8)))*Cartan
+print("2 rho_Q=" + two_rho_Q)
+
+# compute difference
+print("2 rho_Q - 2 rho_B = " +(two_rho_Q-two_rho_B))
+
+
+
